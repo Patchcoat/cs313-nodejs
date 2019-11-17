@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 5000
 function callback(req, res, le) {
     var urlParse = url.parse(req.url, true);
     var weight = Number(urlParse.query['weiht']);
+    console.log("Weight:" + weight);
     var type;
     if (le) {
         type = 'LE';
@@ -85,9 +86,26 @@ express()
   .get('/postalCalc', function (req, res) {
       var result = callback(req, res, false);
       var urlParse = url.parse(req.url, true);
+      var packType = urlParse.query['type'];
+      switch(packType) {
+          case 'LS':
+              packType = "Letters (Stamped)";
+              break;
+          case 'LM':
+              packType = "Letters (Metered)";
+              break;
+          case 'LE':
+              packType = "Large Envelopes (Flats)";
+              break;
+          case 'FC':
+              packType = "First-Class Package Service-Retail";
+              break;
+          default:
+              break;
+      }
       var response = {
           weight : urlParse.query['weight'],
-          type : urlParse.query['type'],
+          type : packType,
           price : result
       };
       res.render('pages/postalCalc', response);
