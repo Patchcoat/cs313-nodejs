@@ -22,7 +22,7 @@ function callback(req, res, le) {
         result = .85;
     } else if (weight <= 3.5) {
         result = 1;
-    } else if (weight > 3.5) {
+    } else if (weight > 3.5 && !le) {
         return callback(req, res, true);
     }
     switch(type){
