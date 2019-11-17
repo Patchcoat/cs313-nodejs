@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <% include ../partials/header.ejs %>
+</head>
+
+<body>
+<% include ../partials/nav.ejs %>
+<div class="container">
+    <form action="postalCalc" method="get">
+        <input type="number" class="form-control" name="weight">
+        <select class="form-control" name="type">
+            <option value="LS">Letters (Stamped)</option>
+            <option value="LM">Letters (Metered)</option>
+            <option value="LE">Large Envelopes (Flats)</option>
+            <option value="FC">First-Class Package Service-Retail</option>
+        </select>
+        <input type="submit" class="btn btn-primary">
+    </form>
+</div>
+</body>
+</html>
