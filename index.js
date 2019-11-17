@@ -24,7 +24,7 @@ function callback(req, res, le) {
         return callback(req, res, true);
     }
     switch(type){
-        case 'LS';
+        case 'LS':
             break;
         case 'LM':
             result -= 0.05;
