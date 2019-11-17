@@ -5,7 +5,7 @@ const PORT = process.env.PORT || 5000
 
 function callback(req, res, le) {
     var urlParse = url.parse(req.url, true);
-    var weight = Number(urlParse.query['weiht']);
+    var weight = Number(urlParse.query['weight']);
     console.log("Weight:" + weight);
     var type;
     if (le) {
