@@ -1,12 +1,20 @@
 const express = require('express')
 const path = require('path')
 const url = require('url')
+const { Pool } = require('pg')
 const PORT = process.env.PORT || 5000
+const pool = new Pool({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'postgres',
+    password: 'password',
+    port: 5432
+});
+
 
 function callback(req, res, le) {
     var urlParse = url.parse(req.url, true);
     var weight = Number(urlParse.query['weight']);
-    console.log("Weight:" + weight);
     var type;
     if (le) {
         type = 'LE';
@@ -77,11 +85,27 @@ function callback(req, res, le) {
     return result;
 }
 
+function getParents (req, res) {
+    var urlParse = url.parse(req.url, true);
+    var id = urlParse.query['id'];
+    pool.query('SELECT * FROM person WHERE id='+id, (err, results) => {
+        if (err) {
+            throw err
+        }
+        console.log(results.rows)
+        res.status(200).json(results.rows)
+    })
+}
+
 express()
   .use(express.static(path.join(__dirname, 'public')))
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
   .get('/', (req, res) => res.render('pages/index'))
+  .get('/getPerson', function (req, res) {
+      getParents(req, res);
+      //res.render('pages/getPerson');
+  })
   .get('/postal', (req, res) => res.render('pages/postal'))
   .get('/postalCalc', function (req, res) {
       var result = callback(req, res, false);
