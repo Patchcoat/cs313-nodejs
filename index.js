@@ -97,11 +97,67 @@ function getParents (req, res) {
     })
 }
 
+function getUsername (req, res) {
+    var urlParse = url.parse(req.url, true);
+    var username = urlParse.query['user'];
+    var sqlQuery = "SELECT * FROM users WHERE username='"+username+"'";
+    console.log(sqlQuery);
+    pool.query(sqlQuery, (err, results) => {
+        if (err) {
+            throw err
+        }
+        var respondWith = "error";
+        if (results.rows.length == 0) {
+            respondWith = "false";
+        } else {
+            respondWith = "true";
+        }
+        console.log(results.rows);
+        res.status(200);
+        res.setHeader('Content-type', 'text/plain');
+        return res.send(respondWith);
+    })
+}
+
+function login (req, res) {
+    var urlParse = url.parse(req.url, true);
+    var username = urlParse.query['user'];
+    var password = urlParse.query['pass'];
+    // TODO this is terrible. The password is sent to the server unencrypted. This needs to be fixed in later versions
+    var sqlQuery = "SELECT id FROM users WHERE username='"+username+"' AND password=crypt('"+password+"', password)";
+    console.log(sqlQuery);
+    pool.query(sqlQuery, (err, results) => {
+        if (err) {
+            throw err
+        }
+        var respondWith = "error";
+        if (results.rows.length == 0) {
+            respondWith = "false";
+        } else {
+            respondWith = "true";
+        }
+        console.log(results.rows);
+        res.status(200);
+        res.setHeader('Content-type', 'text/plain');
+        return res.send(respondWith);
+    })
+}
+
 express()
   .use(express.static(path.join(__dirname, 'public')))
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
   .get('/', (req, res) => res.render('pages/index'))
+  .get('/login', (req, res) => res.render('pages/login'))
+  .get('/username', function (req, res) {
+      var respondWith = "error";
+      getUsername(req, res);
+  })
+  .get('/password', function (req, res) {
+      var respondWith = "error";
+      login(req, res);
+  })
+  .get('/notepad', (req, res) => res.render('pages/notepad'))
   .get('/getPerson', function (req, res) {
       getParents(req, res);
       //res.render('pages/getPerson');
