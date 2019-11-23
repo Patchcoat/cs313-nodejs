@@ -4,12 +4,16 @@ const url = require('url')
 const { Pool } = require('pg')
 const PORT = process.env.PORT || 5000
 const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: true
+});
+/*const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'postgres',
     password: 'password',
     port: 5432
-});
+});*/
 
 
 function callback(req, res, le) {
