@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <% include ../partials/header.ejs %>
+<script src="/scripts/searchScript.js"></script>
+</head>
+<body>
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+        <label for="username">Search for a movie</label>
+        <input type="text" class="form-control" id="search" placeholder="Search"><br>
+        <button type="button" id="searchBtn" class="btn btn-primary" onclick="searchDB();">Search</button>
+        <br>
+        <div id="results"></div>
+    </div>
+  </div> <!-- row -->
+</div>
+</body>
+</html>

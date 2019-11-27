@@ -3,17 +3,19 @@ const path = require('path')
 const url = require('url')
 const { Pool } = require('pg')
 const PORT = process.env.PORT || 5000
-const pool = new Pool({
+// Heroku Database
+/*const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: true
-});
-/*const pool = new Pool({
+});*/
+// Local Database
+const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'postgres',
     password: 'password',
     port: 5432
-});*/
+});
 
 
 function callback(req, res, le) {
@@ -152,6 +154,7 @@ express()
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
   .get('/', (req, res) => res.render('pages/index'))
+  .get('/movieSearch', (req, res) => res.render('pages/omdbsearch'))
   .get('/login', (req, res) => res.render('pages/login'))
   .get('/username', function (req, res) {
       var respondWith = "error";
