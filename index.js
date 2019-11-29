@@ -4,18 +4,18 @@ const url = require('url')
 const { Pool } = require('pg')
 const PORT = process.env.PORT || 5000
 // Heroku Database
-/*const pool = new Pool({
+const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: true
-});*/
+});
 // Local Database
-const pool = new Pool({
+/*const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'postgres',
     password: 'password',
     port: 5432
-});
+});*/
 
 
 function callback(req, res, le) {
@@ -118,7 +118,6 @@ function getUsername (req, res) {
         } else {
             respondWith = "true";
         }
-        console.log(results.rows);
         res.status(200);
         res.setHeader('Content-type', 'text/plain');
         return res.send(respondWith);
@@ -149,6 +148,87 @@ function login (req, res) {
     })
 }
 
+function usernameFromCookie(username) {
+    return username;
+}
+
+function getText(req, res) {
+    var urlParse = url.parse(req.url, true);
+    var cookie = usernameFromCookie(urlParse.query['cookie']);
+    var sqlQuery = "SELECT textbox FROM notepads n INNER JOIN users u ON n.id=u.id WHERE username='"+cookie+"'";
+    console.log(sqlQuery);
+    pool.query(sqlQuery, (err, results) => {
+        if (err) {
+            throw err
+        }
+        if (results.rows.length == 0) {
+            respondWith = "";
+        } else {
+            respondWith = results.rows[0]["textbox"];
+        }
+        console.log(results.rows);
+        res.status(200);
+        res.setHeader('Content-type', 'text/plain');
+        return res.send(respondWith);
+    })
+}
+
+function updateText(req, res) {
+    var urlParse = url.parse(req.url, true);
+    var cookie = usernameFromCookie(urlParse.query['cookie']);
+    var text = urlParse.query['text'];
+    var sqlQuery = "UPDATE notepads n SET textbox='"+text+"' FROM users u WHERE u.id=n.id AND username='"+cookie+"'";
+    console.log(sqlQuery);
+    pool.query(sqlQuery, (err, results) => {
+        if (err) {
+            throw err
+        }
+    })
+}
+
+function logout(req, res) {
+    var urlParse = url.parse(req.url, true);
+    var cookie = usernameFromCookie(urlParse.query['cookie']);
+    var text = urlParse.query['text'];
+    var sqlQuery = "UPDATE notepads n SET textbox='"+text+"' FROM users u WHERE u.id=n.id AND username='"+cookie+"'";
+    console.log(sqlQuery);
+    pool.query(sqlQuery, (err, results) => {
+        if (err) {
+            throw err
+        }
+        res.status(200);
+        res.setHeader('Content-type', 'text/plain');
+        return res.send("resp");
+    })
+}
+
+function newAccount(req, res) {
+    var urlParse = url.parse(req.url, true);
+    var username = urlParse.query['user'];
+    var password = urlParse.query['pass'];
+    var cookie = usernameFromCookie(urlParse.query['cookie']);
+    var text = urlParse.query['text'];
+    var sqlQuery = "INSERT INTO users (username, password) VALUES ('"+username+"', crypt('"+password+"', gen_salt('bf'))) RETURNING id;";
+    console.log(sqlQuery);
+    pool.query(sqlQuery, (err, results) => {
+        if (err) {
+            throw err
+        }
+        var id = results.rows[0].id;
+        var sqlQuery2 = "INSERT INTO notepads (id, textbox) VALUES ('"+id+"', '');";
+        console.log(sqlQuery2);
+        pool.query(sqlQuery2, (err, results) => {
+            if (err) {
+                throw err
+            }
+            var respondWith = "resp";
+            res.status(200);
+            res.setHeader('Content-type', 'text/plain');
+            return res.send(respondWith);
+        })
+    })
+}
+
 express()
   .use(express.static(path.join(__dirname, 'public')))
   .set('views', path.join(__dirname, 'views'))
@@ -156,14 +236,12 @@ express()
   .get('/', (req, res) => res.render('pages/index'))
   .get('/movieSearch', (req, res) => res.render('pages/omdbsearch'))
   .get('/login', (req, res) => res.render('pages/login'))
-  .get('/username', function (req, res) {
-      var respondWith = "error";
-      getUsername(req, res);
-  })
-  .get('/password', function (req, res) {
-      var respondWith = "error";
-      login(req, res);
-  })
+  .get('/logout', logout)
+  .get('/newAccount', newAccount)
+  .get('/username', getUsername)
+  .get('/password', login)
+  .get('/getText', getText)
+  .get('/updateText', updateText)
   .get('/notepad', (req, res) => res.render('pages/notepad'))
   .get('/getPerson', function (req, res) {
       getParents(req, res);

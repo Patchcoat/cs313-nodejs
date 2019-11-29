@@ -57,15 +57,19 @@ function login() {
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             var text = this.responseText;
+            console.log(text);
             switch(text) {
                 case "error":
                     document.getElementById("passwordValid").innerHTML = "There's a problem on our end";
                     break;
-                case "true":
-                    document.getElementById("passwordValid").innerHTML = "Password is correct";
-                    break;
                 case "false":
                     document.getElementById("passwordValid").innerHTML = "Password is incorrect";
+                    break;
+                default:
+                    console.log("default");
+                    document.cookie = "login="+username;
+                    //TODO https://fishbowl.pastiche.org/2004/01/19/persistent_login_cookie_best_practice
+                    window.location.href = "notepad";
                     break;
             }
         }
@@ -75,7 +79,24 @@ function login() {
 }
 
 function newAccount() {
-
+    var username = document.getElementById("username").value;
+    var password1 = document.getElementById("password").value;
+    var password2 = document.getElementById("verifyPassword").value;
+    if (password1 != password2) {
+        document.getElementById("passwordValid").innerHTML = "Passwords don't match";
+        return;
+    }
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var text = this.responseText;
+            document.cookie = "login="+username;
+            console.log(text);
+            window.location.href = "notepad"
+        }
+    }
+    xhttp.open("GET", "newAccount?user="+username+"&pass="+password1, true);
+    xhttp.send();
 }
 
 var usernameInput = document.getElementById("username");

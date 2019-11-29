@@ -2,18 +2,19 @@
 <html>
 <head>
   <% include ../partials/header.ejs %>
+  <script src="/scripts/notepadScript.js"></script>
 </head>
-
-<body>
-<div class="jumbotron text-center">
-  <div class="container">
-  </div>
-</div>
-<div class="container">
-  <div class="row">
-    <div class="col-md-12">
+<body onload="notepadLoad();" class="dark-mode">
+    <div id="navOverlay" class="overlay">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&#9650;</a>
+        <div class="overlay-content">
+            <a href="javascript:void(0)" onclick="logout()">Logout</a>
+            <a href="javascript:void(0)" onclick="switchMode()" id="switchMode">Dark Mode</a>
+        </div>
     </div>
-  </div> <!-- row -->
-</div>
+    <textarea id="notepadTextArea" class="notepad dark-mode"></textarea>
+    <div class="float-button">
+        <a href="javascript:void(0)" class="closebtn" onclick="openNav()">&#9660;</a>
+    </div>
 </body>
 </html>
