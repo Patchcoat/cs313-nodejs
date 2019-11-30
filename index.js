@@ -214,6 +214,11 @@ function updateText(req, res) {
     console.log(req.cookies);
     var urlParse = url.parse(req.url, true);
     var cookie = req.cookies['login'];
+    if (cookie === undefined) {
+        res.status(200);
+        res.setHeader('Content-type', 'text/plain');
+        return res.send(req.cookies['text']);
+    }
     var result = usernameFromCookie(cookie);
     var username = result[0];
     var key = result[1];
@@ -250,6 +255,11 @@ function updateText(req, res) {
 function logout(req, res) {
     var urlParse = url.parse(req.url, true);
     var cookie = req.cookies['login'];
+    if (cookie === undefined) {
+        res.status(200);
+        res.setHeader('Content-type', 'text/plain');
+        return res.send(req.cookies['text']);
+    }
     var username = usernameFromCookie(cookie)[0];
     var text = req.cookies['text'];
     var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username=$1";
