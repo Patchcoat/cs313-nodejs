@@ -5,18 +5,18 @@ const url = require('url')
 const { Pool } = require('pg')
 const PORT = process.env.PORT || 5000
 // Heroku Database
-const pool = new Pool({
+/*const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: true
-});
+});*/
 // Local Database
-/*const pool = new Pool({
+const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'postgres',
     password: 'password',
     port: 5432
-});*/
+});
 
 
 function callback(req, res, le) {
@@ -262,7 +262,7 @@ function logout(req, res) {
     var urlParse = url.parse(req.url, true);
     var cookie = req.cookies['login'];
     var username = usernameFromCookie(cookie)[0];
-    var text = req.cookies['text'].replace("'", "\'");
+    var text = req.cookies['text'];
     var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username=$1";
     console.log(sqlQuery);
     pool.query(sqlQuery, [username], (err, results) => {
