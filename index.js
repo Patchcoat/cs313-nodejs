@@ -169,7 +169,7 @@ function getText(req, res) {
         }
         res.status(200);
         res.setHeader('Content-type', 'text/plain');
-        return res.send("resp");
+        return res.send(respondWith);
     })
 }
 
@@ -224,10 +224,9 @@ function newAccount(req, res) {
             if (err) {
                 throw err
             }
-            var respondWith = "resp";
             res.status(200);
             res.setHeader('Content-type', 'text/plain');
-            return res.send(respondWith);
+            return res.send("resp");
         })
     })
 }
