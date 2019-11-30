@@ -3,8 +3,6 @@ const cookieParser = require('cookie-parser')
 const path = require('path')
 const url = require('url')
 const { Pool } = require('pg')
-var app = express();
-app.use(cookieParser());
 const PORT = process.env.PORT || 5000
 // Heroku Database
 const pool = new Pool({
@@ -320,7 +318,8 @@ function newAccount(req, res) {
     })
 }
 
-app
+express()
+  .use(cookieParser())
   .use(express.static(path.join(__dirname, 'public')))
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
@@ -342,11 +341,13 @@ app
               throw err
           }
           if (results.rows.length > 0) {
-              if (results.rows[0]["sessionKey"] == cookie) {
-                  res.render('pages/notepad');
+              for (var i = 0; i < results.rows.length; i++) {
+                  if (results.rows[i]["sessionkey"] == cookie) {
+                      return res.redirect('/notepad');
+                  }
               }
           } else {
-              res.render('pages/login');
+              return res.render('pages/login');
           }
       })
   })
