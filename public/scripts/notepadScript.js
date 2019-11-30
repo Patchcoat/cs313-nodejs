@@ -12,7 +12,7 @@ function notepadUpdate() {
     notepadUpdateCookie()
     var xhttp = new XMLHttpRequest();
     var params = "cookie="+getCookie("login")+"&text="+textbox.value;
-    xhttp.open("GET", "updateText?"+params, true);
+    xhttp.open("POST", "updateText?"+params, true);
     xhttp.send();
 }
 

@@ -95,7 +95,7 @@ function callback(req, res, le) {
 function getParents (req, res) {
     var urlParse = url.parse(req.url, true);
     var id = urlParse.query['id'];
-    pool.query('SELECT * FROM person WHERE id='+id, (err, results) => {
+    pool.query('SELECT * FROM person WHERE id=$1',[id], (err, results) => {
         if (err) {
             throw err
         }
@@ -107,9 +107,9 @@ function getParents (req, res) {
 function getUsername (req, res) {
     var urlParse = url.parse(req.url, true);
     var username = urlParse.query['user'];
-    var sqlQuery = "SELECT * FROM users WHERE username='"+username+"'";
+    var sqlQuery = "SELECT * FROM users WHERE username=$1";
     console.log(sqlQuery);
-    pool.query(sqlQuery, (err, results) => {
+    pool.query(sqlQuery, [username], (err, results) => {
         if (err) {
             throw err
         }
@@ -137,9 +137,9 @@ function checkSession (cookie){
     var res = usernameFromCookie(cookie);
     var username = res[0];
     var key = res[1];
-    var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username='"+username+"'";
+    var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username=$1";
     console.log(sqlQuery);
-    pool.query(sqlQuery, (err, results) => {
+    pool.query(sqlQuery, [username], (err, results) => {
         if (err) {
             throw err
         }
@@ -155,9 +155,9 @@ function login (req, res) {
     var urlParse = url.parse(req.url, true);
     var username = urlParse.query['user'];
     var password = urlParse.query['pass'];
-    var sqlQuery = "SELECT id FROM users WHERE username='"+username+"' AND password=crypt('"+password+"', password)";
+    var sqlQuery = "SELECT id FROM users WHERE username=$1 AND password=crypt($2, password)";
     console.log(sqlQuery);
-    pool.query(sqlQuery, (err, results) => {
+    pool.query(sqlQuery, [username, password], (err, results) => {
         if (err) {
             throw err
         }
@@ -168,9 +168,9 @@ function login (req, res) {
         } else {
             // log in
             var key = username+"."+Math.floor(Math.random() * 100000000000);
-            var sqlQuery = "INSERT INTO sessions (id, sessionKey) VALUES ("+results.rows[0]["id"]+", '"+key+"')";
+            var sqlQuery = "INSERT INTO sessions (id, sessionKey) VALUES ($1, '"+key+"')";
             console.log(sqlQuery);
-            pool.query(sqlQuery, (err, results) => {
+            pool.query(sqlQuery, [results.rows[0]["id"]], (err, results) => {
                 if (err) {
                     throw err
                 }
@@ -188,18 +188,18 @@ function getText(req, res) {
     var result = usernameFromCookie(cookie);
     var username = result[0];
     var key = result[1];
-    var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username='"+username+"'";
+    var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username=$1";
     console.log(sqlQuery);
-    pool.query(sqlQuery, (err, results) => {
+    pool.query(sqlQuery, [username], (err, results) => {
         if (err) {
             throw err
         }
         if (results.rows.length > 0) {
             for (var i = 0; i < results.rows.length; i++) {
                 if (results.rows[i]["sessionkey"] == cookie) {
-                    var sqlQuery = "SELECT textbox FROM notepads n INNER JOIN users u ON n.id=u.id WHERE username='"+username+"'";
+                    var sqlQuery = "SELECT textbox FROM notepads n INNER JOIN users u ON n.id=u.id WHERE username=$1";
                     console.log(sqlQuery);
-                    pool.query(sqlQuery, (err, results) => {
+                    pool.query(sqlQuery, [username], (err, results) => {
                         if (err) {
                             throw err
                         }
@@ -228,22 +228,24 @@ function updateText(req, res) {
     var result = usernameFromCookie(cookie);
     var username = result[0];
     var key = result[1];
-    var text = req.cookies['text'].replace("'","\'");
-    var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username='"+username+"'";
+    var text = req.cookies['text'];
+    console.log(text);
+    var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username=$1";
     console.log(sqlQuery);
-    pool.query(sqlQuery, (err, results) => {
+    pool.query(sqlQuery, [username], (err, results) => {
         if (err) {
             throw err
         }
         if (results.rows.length > 0) {
             for (var i = 0; i < results.rows.length; i++) {
                 if (results.rows[i]["sessionkey"] == cookie) {
-                    var sqlQuery = "UPDATE notepads n SET textbox='"+text+"' FROM users u WHERE u.id=n.id AND username='"+username+"'";
+                    var sqlQuery = "UPDATE notepads n SET textbox=$1 FROM users u WHERE u.id=n.id AND username=$2";
                     console.log(sqlQuery);
-                    pool.query(sqlQuery, (err, results) => {
+                    pool.query(sqlQuery, [text, username], (err, results) => {
                         if (err) {
                             throw err
                         }
+                        console.log("No err");
                     })
                 }
             }
@@ -261,24 +263,24 @@ function logout(req, res) {
     var cookie = req.cookies['login'];
     var username = usernameFromCookie(cookie)[0];
     var text = req.cookies['text'].replace("'", "\'");
-    var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username='"+username+"'";
+    var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username=$1";
     console.log(sqlQuery);
-    pool.query(sqlQuery, (err, results) => {
+    pool.query(sqlQuery, [username], (err, results) => {
         if (err) {
             throw err
         }
         if (results.rows.length > 0) {
             for (var i = 0; i < results.rows.length; i++) {
                 if (results.rows[i]["sessionkey"] == cookie) {
-                    var sqlQuery = "UPDATE notepads n SET textbox='"+text+"' FROM users u WHERE u.id=n.id AND username='"+username+"'";
+                    var sqlQuery = "UPDATE notepads n SET textbox=$1 FROM users u WHERE u.id=n.id AND username=$2";
                     console.log(sqlQuery);
-                    pool.query(sqlQuery, (err, results) => {
+                    pool.query(sqlQuery, [text, username], (err, results) => {
                         if (err) {
                             throw err
                         }
-                        var sqlQuery = "DELETE FROM sessions s USING users AS u WHERE sessionkey='"+cookie+"' OR s.id=u.id AND u.username='"+username+"'";
+                        var sqlQuery = "DELETE FROM sessions s USING users AS u WHERE sessionkey=$1 OR s.id=u.id AND u.username=$2";
                         console.log(sqlQuery);
-                        pool.query(sqlQuery, (err, results) => {
+                        pool.query(sqlQuery, [cookie, username], (err, results) => {
                             if (err) {
                                 throw err
                             }
@@ -298,16 +300,16 @@ function newAccount(req, res) {
     var username = urlParse.query['user'];
     var password = urlParse.query['pass'];
     var cookie = usernameFromCookie(urlParse.query['cookie']);
-    var sqlQuery = "INSERT INTO users (username, password) VALUES ('"+username+"', crypt('"+password+"', gen_salt('bf'))) RETURNING id;";
+    var sqlQuery = "INSERT INTO users (username, password) VALUES ($1, crypt($2, gen_salt('bf'))) RETURNING id;";
     console.log(sqlQuery);
-    pool.query(sqlQuery, (err, results) => {
+    pool.query(sqlQuery, [username, password], (err, results) => {
         if (err) {
             throw err
         }
         var id = results.rows[0].id;
-        var sqlQuery2 = "INSERT INTO notepads (id, textbox) VALUES ('"+id+"', '');";
+        var sqlQuery2 = "INSERT INTO notepads (id, textbox) VALUES ($1, '');";
         console.log(sqlQuery2);
-        pool.query(sqlQuery2, (err, results) => {
+        pool.query(sqlQuery2, [id], (err, results) => {
             if (err) {
                 throw err
             }
@@ -334,9 +336,9 @@ express()
       var result = usernameFromCookie(cookie);
       var username = result[0];
       var key = result[1];
-      var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username='"+username+"'";
+      var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username=$1";
       console.log(sqlQuery);
-      pool.query(sqlQuery, (err, results) => {
+      pool.query(sqlQuery, [username],(err, results) => {
           if (err) {
               throw err
           }
@@ -356,7 +358,7 @@ express()
   .get('/username', getUsername)
   .get('/password', login)
   .get('/getText', getText)
-  .get('/updateText', updateText)
+  .post('/updateText', updateText)
   .get('/notepad', (req, res) => res.render('pages/notepad'))
   .get('/getPerson', function (req, res) {
       getParents(req, res);
