@@ -4,18 +4,18 @@ const url = require('url')
 const { Pool } = require('pg')
 const PORT = process.env.PORT || 5000
 // Heroku Database
-const pool = new Pool({
+/*const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: true
-});
+});*/
 // Local Database
-/*const pool = new Pool({
+const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'postgres',
     password: 'password',
     port: 5432
-});*/
+});
 
 
 function callback(req, res, le) {
@@ -161,15 +161,15 @@ function getText(req, res) {
         if (err) {
             throw err
         }
+        console.log(results.rows);
         if (results.rows.length == 0) {
             respondWith = "";
         } else {
             respondWith = results.rows[0]["textbox"];
         }
-        console.log(results.rows);
         res.status(200);
         res.setHeader('Content-type', 'text/plain');
-        return res.send(respondWith);
+        return res.send("resp");
     })
 }
 
@@ -183,6 +183,9 @@ function updateText(req, res) {
         if (err) {
             throw err
         }
+        res.status(200);
+        res.setHeader('Content-type', 'text/plain');
+        return res.send("resp");
     })
 }
 
