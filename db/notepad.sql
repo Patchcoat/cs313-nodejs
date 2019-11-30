@@ -14,6 +14,12 @@ CREATE TABLE notepads
     FOREIGN KEY (id) REFERENCES users (id)
 );
 
+CREATE TABLE sessions
+(
+    id INTEGER NOT NULL,
+    sessionKey TEXT PRIMARY KEY
+);
+
 INSERT INTO users (username, password) VALUES (
     'test',
     crypt('password', gen_salt('bf'))

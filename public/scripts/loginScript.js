@@ -66,9 +66,7 @@ function login() {
                     document.getElementById("passwordValid").innerHTML = "Password is incorrect";
                     break;
                 default:
-                    console.log("default");
-                    document.cookie = "login="+username;
-                    //TODO https://fishbowl.pastiche.org/2004/01/19/persistent_login_cookie_best_practice
+                    document.cookie = "login="+text;
                     window.location.href = "notepad";
                     break;
             }
