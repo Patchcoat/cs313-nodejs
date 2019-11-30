@@ -61,8 +61,10 @@ function logout() {
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             var text = this.responseText;
+            if (text != "maintain") {
+                document.cookie = "text=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            }
             document.cookie = "login=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie = "text=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             window.location.href = "login";
         }
     }

@@ -258,7 +258,7 @@ function logout(req, res) {
     if (cookie === undefined) {
         res.status(200);
         res.setHeader('Content-type', 'text/plain');
-        return res.send(req.cookies['text']);
+        return res.send("maintain");
     }
     var username = usernameFromCookie(cookie)[0];
     var text = req.cookies['text'];
