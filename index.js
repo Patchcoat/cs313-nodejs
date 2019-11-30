@@ -133,24 +133,6 @@ function usernameFromCookie(cookie) {
     return returnRes;
 }
 
-function checkSession (cookie){
-    var res = usernameFromCookie(cookie);
-    var username = res[0];
-    var key = res[1];
-    var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username=$1";
-    console.log(sqlQuery);
-    pool.query(sqlQuery, [username], (err, results) => {
-        if (err) {
-            throw err
-        }
-        if (results.rows[0]["sessionKey"] == cookie) {
-            return true;
-        } else {
-            return false;
-        }
-    })
-}
-
 function login (req, res) {
     var urlParse = url.parse(req.url, true);
     var username = urlParse.query['user'];
@@ -185,6 +167,11 @@ function login (req, res) {
 
 function getText(req, res) {
     var cookie = req.cookies['login'];
+    if (cookie === undefined) {
+        res.status(200);
+        res.setHeader('Content-type', 'text/plain');
+        return res.send(req.cookies['text']);
+    }
     var result = usernameFromCookie(cookie);
     var username = result[0];
     var key = result[1];
@@ -216,7 +203,9 @@ function getText(req, res) {
                 }
             }
         } else {
-            return false;
+            res.status(200);
+            res.setHeader('Content-type', 'text/plain');
+            return res.send("");
         }
     })
 }
