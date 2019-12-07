@@ -17,6 +17,7 @@ const pool = new Pool({
     password: 'password',
     port: 5432
 });*/
+var cookieSignature = process.env.SECRET_SIG
 
 
 function callback(req, res, le) {
@@ -133,6 +134,19 @@ function usernameFromCookie(cookie) {
     return returnRes;
 }
 
+function updateSessionKey(req, res, username, oldKey) {
+    var sqlQuery = "UPDATE sessions SET sessionKey=$1 WHERE sessionKey=$2";
+    var key = username+"."+Math.floor(Math.random() * 100000000000);
+    console.log(sqlQuery);
+    pool.query(sqlQuery, [key, oldKey], (err, results) => {
+        if (err) {
+            throw err
+        }
+        res.cookie('login', key, {signed: true});
+        console.log(results.rows);
+    })
+}
+
 function login (req, res) {
     var urlParse = url.parse(req.url, true);
     var username = urlParse.query['user'];
@@ -148,25 +162,27 @@ function login (req, res) {
             res.setHeader('Content-type', 'text/plain');
             return res.send("false");
         } else {
-            // log in
             var key = username+"."+Math.floor(Math.random() * 100000000000);
-            var sqlQuery = "INSERT INTO sessions (id, sessionKey) VALUES ($1, '"+key+"')";
+            var sqlQuery = "INSERT INTO sessions (id, sessionKey) VALUES ($1, $2)";
             console.log(sqlQuery);
-            pool.query(sqlQuery, [results.rows[0]["id"]], (err, results) => {
+            console.log(key);
+            pool.query(sqlQuery, [results.rows[0]["id"], key], (err, results) => {
                 if (err) {
                     throw err
                 }
                 console.log(results.rows);
                 res.status(200);
                 res.setHeader('Content-type', 'text/plain');
-                return res.send(key);
+                res.cookie('login', key, {signed: true});
+                return res.send("key");
             })
         }
     })
 }
 
 function getText(req, res) {
-    var cookie = req.cookies['login'];
+    var cookie = req.signedCookies['login'];
+    console.log("Cookie:"+cookie);
     if (cookie === undefined) {
         res.status(200);
         res.setHeader('Content-type', 'text/plain');
@@ -181,6 +197,7 @@ function getText(req, res) {
         if (err) {
             throw err
         }
+        //updateSessionKey(req, res, username, req.signedCookies['login']);
         if (results.rows.length > 0) {
             for (var i = 0; i < results.rows.length; i++) {
                 if (results.rows[i]["sessionkey"] == cookie) {
@@ -196,6 +213,7 @@ function getText(req, res) {
                         } else {
                             respondWith = results.rows[0]["textbox"];
                         }
+                        console.log(respondWith);
                         res.status(200);
                         res.setHeader('Content-type', 'text/plain');
                         return res.send(respondWith);
@@ -213,7 +231,7 @@ function getText(req, res) {
 function updateText(req, res) {
     console.log(req.cookies);
     var urlParse = url.parse(req.url, true);
-    var cookie = req.cookies['login'];
+    var cookie = req.signedCookies['login'];
     if (cookie === undefined) {
         res.status(200);
         res.setHeader('Content-type', 'text/plain');
@@ -230,6 +248,7 @@ function updateText(req, res) {
         if (err) {
             throw err
         }
+        //updateSessionKey(req, res, username, req.signedCookies['login']);
         if (results.rows.length > 0) {
             for (var i = 0; i < results.rows.length; i++) {
                 if (results.rows[i]["sessionkey"] == cookie) {
@@ -254,14 +273,15 @@ function updateText(req, res) {
 
 function logout(req, res) {
     var urlParse = url.parse(req.url, true);
-    var cookie = req.cookies['login'];
+    var cookie = req.signedCookies['login'];
     if (cookie === undefined) {
         res.status(200);
         res.setHeader('Content-type', 'text/plain');
         return res.send("maintain");
     }
     var username = usernameFromCookie(cookie)[0];
-    var text = req.cookies['text'];
+    var text = urlParse.query['text'];
+    console.log(text);
     var sqlQuery = "SELECT sessionKey FROM sessions s INNER JOIN users u ON s.id=u.id WHERE u.username=$1";
     console.log(sqlQuery);
     pool.query(sqlQuery, [username], (err, results) => {
@@ -320,7 +340,7 @@ function newAccount(req, res) {
 }
 
 express()
-  .use(cookieParser())
+  .use(cookieParser(cookieSignature))
   .use(express.static(path.join(__dirname, 'public')))
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
@@ -328,8 +348,9 @@ express()
   .get('/movieSearch', (req, res) => res.render('pages/omdbsearch'))
   .get('/login', function (req, res){
       console.log(req.cookies);
-      var cookie = req.cookies['login'];
-      if (cookie === undefined) {
+      var cookie = req.signedCookies['login'];
+      console.log(cookie);
+      if (!cookie) {
           return res.render('pages/login');
       }
       var result = usernameFromCookie(cookie);
@@ -358,6 +379,13 @@ express()
   .get('/password', login)
   .get('/getText', getText)
   .post('/updateText', updateText)
+  .get('/test', (req, res) => res.render('pages/test'))
+  .post('/login', function (req, res) {
+
+  })
+  .post('/logout', function (req, res) {
+
+  })
   .get('/notepad', (req, res) => res.render('pages/notepad'))
   .get('/getPerson', function (req, res) {
       getParents(req, res);

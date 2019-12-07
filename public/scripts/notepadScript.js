@@ -6,6 +6,10 @@ function getCookie(name) {
     if (parts.length == 2) return parts.pop().split(";").shift();
 }
 
+function checkCookie(name) {
+    console.log(getCookie(name));
+}
+
 function notepadUpdate() {
     var textbox = document.getElementById("notepadTextArea");
     oldText = textbox.value;
@@ -30,6 +34,10 @@ window.setInterval(function() {
 
 function notepadLoad() {
     var textbox = document.getElementById("notepadTextArea");
+    var logoutLink = document.getElementById("logout");
+    if (getCookie("login") === undefined) {
+        logoutLink.innerHTML = "Login";
+    }
     textbox.addEventListener('keyup', notepadUpdateCookie);
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -41,7 +49,7 @@ function notepadLoad() {
     }
     var textboxText = getCookie("text");
     if (textboxText === undefined) {
-        xhttp.open("GET", "getText?cookie="+getCookie("login"), true);
+        xhttp.open("GET", "getText", true);
         xhttp.send();
     } else {
         textbox.value = textboxText;
@@ -53,6 +61,10 @@ function notepadLoad() {
     } else {
         setMode(1);
     }
+    var size = getCookie("textSize");
+    setSize(size);
+    var font = getCookie("textFont");
+    setFont(font);
 }
 
 function logout() {
@@ -103,9 +115,55 @@ function switchMode() {
     }
 }
 
+function textUp() {
+    var notepadText = document.getElementById("notepadTextArea");
+    notepadText.style.fontSize = "4em"
+    document.cookie = "textSize="+notepadText.style.fontSize;
+}
+
+function textNorm() {
+    var notepadText = document.getElementById("notepadTextArea");
+    notepadText.style.fontSize = "2em"
+    document.cookie = "textSize="+notepadText.style.fontSize;
+}
+
+function textDown() {
+    var notepadText = document.getElementById("notepadTextArea");
+    notepadText.style.fontSize = "1em"
+    document.cookie = "textSize="+notepadText.style.fontSize;
+}
+
+function newFont() {
+    var notepadText = document.getElementById("notepadTextArea");
+    switch (notepadText.style.fontFamily) {
+        case "monospace":
+            notepadText.style.fontFamily = "sans-serif";
+            break;
+        case "sans-serif":
+            notepadText.style.fontFamily = "serif";
+            break;
+        case "serif":
+            notepadText.style.fontFamily = "monospace";
+            break;
+        default:
+            notepadText.style.fontFamily = "monospace";
+    }
+    document.cookie = "textFont="+notepadText.style.fontFamily;
+}
+
+function setSize(size) {
+    var notepadText = document.getElementById("notepadTextArea");
+    notepadText.style.fontSize = size;
+}
+
+function setFont(font) {
+    var notepadText = document.getElementById("notepadTextArea");
+    notepadText.style.fontFamily = font;
+}
+
 function openNav() {
     document.getElementById("navOverlay").style.height = "50%";
-    document.getElementById("navOverlay").style.minHeight = "300px";
+    document.getElementById("navOverlay").style.minHeight = "380px";
 }
 
 function closeNav() {

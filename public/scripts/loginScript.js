@@ -1,3 +1,47 @@
+function getCookie(name) {
+    var value = "; " + document.cookie;
+    var parts = value.split("; " + name + "=");
+    if (parts.length == 2) return parts.pop().split(";").shift();
+}
+
+function loginLoad() {
+    if(getCookie("mode") === 'light') {
+        setMode(1);
+    } else {
+        setMode(0);
+    }
+}
+
+function setEach(elementArray, classname) {
+    for (var i = 0; i < elementArray.length; i++) {
+        elementArray[i].classList.remove("dark-mode");
+        elementArray[i].classList.remove("light-mode");
+        elementArray[i].classList.add(classname);
+    }
+}
+
+function setMode(mode) {
+    var body = document.getElementsByTagName("body")[0];
+    var labels = document.getElementsByTagName("label");
+    var inputs = document.getElementsByTagName("input");
+    var paragraphs = document.getElementsByTagName("paragraph");
+    if (mode == 0) {
+        // set to dark mode
+        body.className = "dark-mode";
+        setEach(labels, "dark-mode");
+        setEach(inputs, "dark-mode");
+        setEach(paragraphs, "dark-mode");
+        document.cookie = "mode=dark";
+    } else {
+        // set to light mode
+        body.className = "light-mode";
+        setEach(labels, "light-mode");
+        setEach(inputs, "light-mode");
+        setEach(paragraphs, "light-mode");
+        document.cookie = "mode=light";
+    }
+}
+
 function passValidate(password) {
     var password = document.getElementById("password").value;
     if (password.length == 0) {
@@ -66,7 +110,6 @@ function login() {
                     document.getElementById("passwordValid").innerHTML = "Password is incorrect";
                     break;
                 default:
-                    document.cookie = "login="+text;
                     window.location.href = "notepad";
                     break;
             }
@@ -88,7 +131,6 @@ function newAccount() {
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             var text = this.responseText;
-            document.cookie = "login="+username;
             console.log(text);
             window.location.href = "notepad"
         }
