@@ -158,7 +158,11 @@ function setSize(size) {
 
 function setFont(font) {
     var notepadText = document.getElementById("notepadTextArea");
-    notepadText.style.fontFamily = font;
+    if (font === undefined) {
+        notepadText.style.fontFamily = "monospace";
+    } else {
+        notepadText.style.fontFamily = font;
+    }
 }
 
 function openNav() {
